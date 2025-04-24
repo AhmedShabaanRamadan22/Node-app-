@@ -1,9 +1,9 @@
-name: CI/CD Pipeline test app
+name: CI/CD Pipeline
 
 on:
   push:
     branches:
-    - main
+      - main
 
 jobs:
   build-and-deploy:
@@ -35,4 +35,6 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/node-app:latest
+        tags: |
+          ${{ secrets.DOCKER_USERNAME }}/node-app:latest
+          ${{ secrets.DOCKER_USERNAME }}/node-app:build-${{ github.run_number }}
