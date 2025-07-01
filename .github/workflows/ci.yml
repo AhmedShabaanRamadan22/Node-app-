@@ -58,5 +58,5 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
           cd /home/ubuntu/my-app
-          TAG=${{ env.TAG }} docker-compose pull
-          TAG=${{ env.TAG }} docker-compose up -d
+          TAG=${{ env.TAG }} docker compose pull
+          TAG=${{ env.TAG }} docker compose up -d
