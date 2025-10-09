@@ -8,6 +8,9 @@ on:
     types: [ opened, synchronize, reopened ]
 
 jobs:
+  # -------------------------------
+  # Job 1: SonarQube Scan
+  # -------------------------------
   sonar-scan:
     name: SonarQube Scan
     runs-on: ubuntu-latest
@@ -16,7 +19,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0 # Needed for SonarQube to compare new code with previous commits
+        fetch-depth: 0 # Needed for comparing new code with previous commits
 
     - name: Run SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v6
@@ -24,10 +27,28 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
+  # -------------------------------
+  # Job 2: Wait for Quality Gate
+  # -------------------------------
+  sonar-quality-gate:
+    name: Wait for SonarQube Quality Gate
+    runs-on: ubuntu-latest
+    needs: sonar-scan
+
+    steps:
+    - name: Check Quality Gate status
+      uses: SonarSource/sonarqube-quality-gate-action@v1
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  # -------------------------------
+  # Job 3: Build & Deploy
+  # -------------------------------
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
-    needs: sonar-scan # This ensures the build job only runs if SonarQube scan succeeds
+    needs: sonar-quality-gate # Only runs if Quality Gate passed
 
     steps:
     - name: Checkout repository
