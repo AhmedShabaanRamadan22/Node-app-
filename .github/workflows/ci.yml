@@ -32,7 +32,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      continue-on-error: true # مهم عشان ما يقفش الفلو فورًا
+      continue-on-error: true
 
     - name: Fail if Quality Gate failed
       run: |
@@ -43,10 +43,10 @@ jobs:
           echo "✅ Quality Gate PASSED. Continuing build..."
         fi
 
-  build-and-deploy:
-    name: Build and Deploy
+  build:
+    name: Build Docker Image
     runs-on: ubuntu-latest
-    needs: sonar-scan-and-gate # هيتنفذ فقط لو الـ job اللي فوق نجح
+    needs: sonar-scan-and-gate # يتنفذ فقط لو Quality Gate نجح
 
     steps:
     - name: Checkout repository
@@ -69,7 +69,26 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push Docker image
+    - name: Build Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: false
+        tags: ${{ secrets.DOCKER_USERNAME }}/node-app:latest
+
+  deploy:
+    name: Deploy Docker Image
+    runs-on: ubuntu-latest
+    needs: build # يتنفذ فقط لو الـ build نجح
+
+    steps:
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
