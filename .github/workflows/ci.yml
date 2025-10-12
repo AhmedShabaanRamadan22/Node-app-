@@ -34,6 +34,14 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      continue-on-error: true
+
+    # Print message if Quality Gate failed
+    - name: Fail if Quality Gate failed
+      if: failure() # لو الخطوة اللي فوق فشلت
+      run: |
+        echo "🚨 Quality Gate FAILED! Please check SonarQube and fix issues before building."
+        exit 1
 
   build-and-deploy:
     name: Build and Deploy
