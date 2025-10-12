@@ -13,40 +13,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        fetch-depth: 0 # Needed for SonarQube to compare new code with previous commits
+        fetch-depth: 0
 
-    # Run SonarQube Scan
     - name: Run SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v6
       with:
-        projectBaseDir: ./ # Change this if your code is in a subfolder
+        projectBaseDir: ./
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
-    # Check SonarQube Quality Gate
     - name: Check SonarQube Quality Gate
+      id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      continue-on-error: true
+      continue-on-error: true # مهم عشان ما يقفش الفلو فورًا
 
-    # Print message if Quality Gate failed
     - name: Fail if Quality Gate failed
-      if: failure() # لو الخطوة اللي فوق فشلت
       run: |
-        echo "🚨 Quality Gate FAILED! Please check SonarQube and fix issues before building."
-        exit 1
+        if [ "${{ steps.quality_gate.outcome }}" != "success" ]; then
+          echo "🚨 Quality Gate FAILED! Please check SonarQube and fix issues before building."
+          exit 1
+        else
+          echo "✅ Quality Gate PASSED. Continuing build..."
+        fi
 
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
-    needs: sonar-scan-and-gate # Only runs if the Quality Gate passed
+    needs: sonar-scan-and-gate # هيتنفذ فقط لو الـ job اللي فوق نجح
 
     steps:
     - name: Checkout repository
