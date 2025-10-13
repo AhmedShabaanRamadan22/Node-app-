@@ -24,12 +24,14 @@ jobs:
         projectBaseDir: ./
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       continue-on-error: true
 
     # -------------------------
