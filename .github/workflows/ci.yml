@@ -41,14 +41,17 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         QUALITY_OUTCOME: ${{ steps.quality_gate.outcome }}
       run: |
+        #!/bin/bash
+        set -e
+
         PROJECT_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
 
         if [ "$QUALITY_OUTCOME" != "success" ]; then
-          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 [$PROJECT_URL]($PROJECT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 [$PROJECT_URL]($PROJECT_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "🚨 Quality Gate FAILED! Please check SonarQube: $PROJECT_URL"
           exit 1
         else
-          echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($PROJECT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($PROJECT_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "✅ Quality Gate PASSED. View details at: $PROJECT_URL"
 
   build:
