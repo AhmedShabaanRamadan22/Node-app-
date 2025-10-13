@@ -52,7 +52,9 @@ jobs:
         else
           echo "✅ Quality Gate PASSED!" | tee -a $GITHUB_STEP_SUMMARY
         fi
-        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" | tee -a $GITHUB_STEP_SUMMARY
+
+        # رابط clickable باستخدام Markdown
+        echo "🔗 [SonarQube Dashboard]($DASHBOARD_URL)" | tee -a $GITHUB_STEP_SUMMARY
 
     # -------------------------
     # إيقاف البايبلاين لو فشل الـ Quality Gate
