@@ -12,7 +12,6 @@ jobs:
     name: SonarQube Scan & Quality Gate
     runs-on: ubuntu-latest
     env:
-      # << هنا حطيت الـ secrets على مستوى الجوب كله
       SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
@@ -32,20 +31,22 @@ jobs:
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
-      continue-on-error: true
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      continue-on-error: true
 
-    - name: Print SonarQube Dashboard link
+    - name: Print SonarQube Result
       if: always()
       run: |
-        DASHBOARD_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
+        echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
+
         if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
           echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         else
           echo "✅ Quality Gate PASSED!" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         fi
-        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
 
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
