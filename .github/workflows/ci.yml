@@ -11,9 +11,6 @@ jobs:
   sonar-scan-and-gate:
     name: SonarQube Scan & Quality Gate
     runs-on: ubuntu-latest
-    env:
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     steps:
     - name: Checkout repository
@@ -35,20 +32,28 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       continue-on-error: true
 
+    # -------------------------
+    # الخطوة دي بس مسؤولة عن إنشاء الـ Dashboard URL
     - name: Set Dashboard URL
+      env:
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
       run: echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
 
+    # -------------------------
+    # الخطوة دي مسؤولة عن الطباعة في الـ Summary
     - name: Print SonarQube Result
       if: always()
       run: |
         if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
           echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         else
           echo "✅ Quality Gate PASSED!" >> $GITHUB_STEP_SUMMARY
-          echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         fi
+        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
 
+    # -------------------------
+    # الخطوة دي مسؤولة عن إيقاف البايبلاين لو فشل الـ Quality Gate
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
       run: |
