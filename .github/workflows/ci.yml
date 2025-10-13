@@ -25,6 +25,7 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     - name: Check SonarQube Quality Gate
       id: quality_gate
@@ -36,11 +37,12 @@ jobs:
 
     - name: Fail if Quality Gate failed
       run: |
+        PROJECT_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
         if [ "${{ steps.quality_gate.outcome }}" != "success" ]; then
-          echo "🚨 Quality Gate FAILED! Please check SonarQube and fix issues before building."
+          echo "🚨 Quality Gate FAILED! Please check SonarQube: $PROJECT_URL"
           exit 1
         else
-          echo "✅ Quality Gate PASSED. Continuing build..."
+          echo "✅ Quality Gate PASSED. View details at: $PROJECT_URL"
         fi
 
   build:
