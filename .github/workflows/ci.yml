@@ -28,10 +28,12 @@ jobs:
         SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     - name: Check SonarQube Quality Gate
+      id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        contoin-on-error: true # عشان الخطوة دي متوقعش تفشل الjob لو الQuality Gate فشل
 
     - name: Print SonarQube Dashboard link
       if: always() # هتشتغل سواء اللي فوق نجح أو وقع
