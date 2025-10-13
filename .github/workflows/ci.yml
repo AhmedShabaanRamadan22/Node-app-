@@ -46,6 +46,12 @@ jobs:
         fi
         echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
 
+    - name: Fail if Quality Gate failed
+      if: steps.quality_gate.outcome == 'failure'
+      run: |
+        echo "❌ Stopping pipeline because Quality Gate failed."
+        exit 1
+
   build:
     name: Build Docker Image
     runs-on: ubuntu-latest
