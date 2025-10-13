@@ -27,13 +27,6 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
-    - name: Extract SonarQube Project URL
-      run: |
-        echo "📂 محتويات report-task.txt:"
-        cat .scannerwork/report-task.txt || echo "⚠️ report-task.txt not found"
-        DASHBOARD_URL=$(grep '^dashboardUrl=' .scannerwork/report-task.txt | cut -d'=' -f2)
-        echo "DASHBOARD_URL=$DASHBOARD_URL" >> $GITHUB_ENV
-
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
@@ -44,17 +37,22 @@ jobs:
 
     - name: Set Quality Gate outcome
       id: set_outcome
-      run: echo "OUTCOME=${{ steps.quality_gate.outputs.outcome }}" >> $GITHUB_ENV
+      run: echo "OUTCOME=${{ steps.quality_gate.outcome }}" >> $GITHUB_ENV
 
     - name: Fail if Quality Gate failed
+      env:
+        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        OUTCOME: ${{ env.OUTCOME }}
       run: |
+        PROJECT_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
         if [ "$OUTCOME" != "success" ]; then
-          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 $DASHBOARD_URL" >> "$GITHUB_STEP_SUMMARY"
-          echo "🚨 Quality Gate FAILED! Please check SonarQube: $DASHBOARD_URL"
+          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 $PROJECT_URL" >> $GITHUB_STEP_SUMMARY
+          echo "🚨 Quality Gate FAILED! Please check SonarQube: $PROJECT_URL"
           exit 1
         else
-          echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($DASHBOARD_URL)" >> "$GITHUB_STEP_SUMMARY"
-          echo "✅ Quality Gate PASSED. View details at: $DASHBOARD_URL"
+          echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($PROJECT_URL)" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Quality Gate PASSED. View details at: $PROJECT_URL"
         fi
 
   build:
