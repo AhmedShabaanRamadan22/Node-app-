@@ -35,7 +35,7 @@ jobs:
       continue-on-error: true
 
     # -------------------------
-    # الخطوة دي بس مسؤولة عن إنشاء الـ Dashboard URL
+    # إنشاء URL Dashboard (آمن بدون token)
     - name: Set Dashboard URL
       env:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -43,19 +43,19 @@ jobs:
       run: echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
 
     # -------------------------
-    # الخطوة دي مسؤولة عن الطباعة في الـ Summary
+    # طباعة النتيجة في الـ Summary والـ logs
     - name: Print SonarQube Result
       if: always()
       run: |
         if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
-          echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
+          echo "🚨 Quality Gate FAILED! Please check SonarQube" | tee -a $GITHUB_STEP_SUMMARY
         else
-          echo "✅ Quality Gate PASSED!" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Quality Gate PASSED!" | tee -a $GITHUB_STEP_SUMMARY
         fi
-        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" | tee -a $GITHUB_STEP_SUMMARY
 
     # -------------------------
-    # الخطوة دي مسؤولة عن إيقاف البايبلاين لو فشل الـ Quality Gate
+    # إيقاف البايبلاين لو فشل الـ Quality Gate
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
       run: |
