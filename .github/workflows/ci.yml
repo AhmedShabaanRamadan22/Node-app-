@@ -11,6 +11,10 @@ jobs:
   sonar-scan-and-gate:
     name: SonarQube Scan & Quality Gate
     runs-on: ubuntu-latest
+    env:
+      # << هنا حطيت الـ secrets على مستوى الجوب كله
+      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     steps:
     - name: Checkout repository
@@ -24,8 +28,6 @@ jobs:
         projectBaseDir: ./
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     - name: Check SonarQube Quality Gate
       id: quality_gate
@@ -33,12 +35,11 @@ jobs:
       continue-on-error: true
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
     - name: Print SonarQube Dashboard link
       if: always()
       run: |
-        DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
+        DASHBOARD_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
         if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
           echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
         else
@@ -49,9 +50,6 @@ jobs:
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
       run: |
-        DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
-        echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
-        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         echo "❌ Stopping pipeline because Quality Gate failed."
         exit 1
 
