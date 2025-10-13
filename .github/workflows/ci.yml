@@ -27,11 +27,6 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
         SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
-    - name: Set SonarQube Dashboard URL
-      run: |
-        DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
-        echo "DASHBOARD_URL=$DASHBOARD_URL" >> $GITHUB_ENV
-
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
@@ -40,13 +35,10 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       continue-on-error: true
 
-    - name: Set Quality Gate outcome
-      id: set_outcome
-      run: echo "OUTCOME=${{ steps.quality_gate.outputs.outcome }}" >> $GITHUB_ENV
-
     - name: Fail if Quality Gate failed
       run: |
-        if [ "$OUTCOME" != "success" ]; then
+        DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
+        if [ "${{ steps.quality_gate.outcome }}" != "success" ]; then
           echo "## 🚨 Quality Gate **FAILED**" >> "$GITHUB_STEP_SUMMARY"
           echo "🔗 [Check SonarQube Dashboard]($DASHBOARD_URL)" >> "$GITHUB_STEP_SUMMARY"
           exit 1
