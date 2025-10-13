@@ -35,7 +35,7 @@ jobs:
       continue-on-error: true
 
     # -------------------------
-    # إنشاء URL Dashboard (آمن بدون token)
+    # إنشاء URL Dashboard آمن (بدون أي secret)
     - name: Set Dashboard URL
       env:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -43,7 +43,7 @@ jobs:
       run: echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
 
     # -------------------------
-    # طباعة النتيجة في الـ Summary والـ logs
+    # طباعة النتيجة واللينك في الـ logs و Summary
     - name: Print SonarQube Result
       if: always()
       run: |
