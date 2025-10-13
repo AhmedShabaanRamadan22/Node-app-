@@ -49,6 +49,9 @@ jobs:
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
       run: |
+        DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
+        echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
+        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
         echo "❌ Stopping pipeline because Quality Gate failed."
         exit 1
 
