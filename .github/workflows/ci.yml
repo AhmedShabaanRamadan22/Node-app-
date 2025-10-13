@@ -36,7 +36,7 @@ jobs:
 
     - name: Extract SonarQube Project URL
       run: |
-        DASHBOARD_URL=$(grep -oP 'dashboardUrl=\K.*' .scannerwork/report-task.txt)
+        DASHBOARD_URL=$(grep '^dashboardUrl=' .scannerwork/report-task.txt | cut -d'=' -f2)
         echo "DASHBOARD_URL=$DASHBOARD_URL" >> $GITHUB_ENV
 
     - name: Fail if Quality Gate failed
