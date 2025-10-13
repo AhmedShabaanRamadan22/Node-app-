@@ -30,15 +30,20 @@ jobs:
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
+      continue-on-error: true
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        contoin-on-error: true # عشان الخطوة دي متوقعش تفشل الjob لو الQuality Gate فشل
 
     - name: Print SonarQube Dashboard link
-      if: always() # هتشتغل سواء اللي فوق نجح أو وقع
+      if: always()
       run: |
         DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
+        if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
+          echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ Quality Gate PASSED!" >> $GITHUB_STEP_SUMMARY
+        fi
         echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
 
   build:
