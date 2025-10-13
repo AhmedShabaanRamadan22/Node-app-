@@ -36,14 +36,19 @@ jobs:
       continue-on-error: true
 
     - name: Fail if Quality Gate failed
+      env:
+        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       run: |
-        PROJECT_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
+        PROJECT_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
+
         if [ "${{ steps.quality_gate.outcome }}" != "success" ]; then
+          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 [$PROJECT_URL]($PROJECT_URL)" >> $GITHUB_STEP_SUMMARY
           echo "🚨 Quality Gate FAILED! Please check SonarQube: $PROJECT_URL"
           exit 1
         else
+          echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($PROJECT_URL)" >> $GITHUB_STEP_SUMMARY
           echo "✅ Quality Gate PASSED. View details at: $PROJECT_URL"
-        fi
 
   build:
     name: Build Docker Image
