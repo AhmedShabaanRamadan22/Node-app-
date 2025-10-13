@@ -52,6 +52,7 @@ jobs:
         else
           echo "✅ Quality Gate **PASSED** 🎉 [View Report here]($PROJECT_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "✅ Quality Gate PASSED. View details at: $PROJECT_URL"
+        fi
 
   build:
     name: Build Docker Image
