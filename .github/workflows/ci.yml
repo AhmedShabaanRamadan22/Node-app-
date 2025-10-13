@@ -11,9 +11,6 @@ jobs:
   sonar-scan-and-gate:
     name: SonarQube Scan & Quality Gate
     runs-on: ubuntu-latest
-    env:
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
     steps:
     - name: Checkout repository
@@ -25,24 +22,34 @@ jobs:
       uses: SonarSource/sonarqube-scan-action@v6
       with:
         projectBaseDir: ./
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
+
+    - name: Extract SonarQube Project URL
+      run: |
+        echo "📂 محتويات report-task.txt:"
+        cat .scannerwork/report-task.txt || echo "⚠️ report-task.txt not found"
+        DASHBOARD_URL=$(grep '^dashboardUrl=' .scannerwork/report-task.txt | cut -d'=' -f2)
+        echo "DASHBOARD_URL=$DASHBOARD_URL" >> $GITHUB_ENV
 
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       continue-on-error: true
 
     - name: Set Quality Gate outcome
-      run: echo "OUTCOME=${{ steps.quality_gate.outcome }}" >> $GITHUB_ENV
-
-    - name: Extract SonarQube Project URL
-      run: |
-        DASHBOARD_URL=$(grep '^dashboardUrl=' .scannerwork/report-task.txt | cut -d'=' -f2)
-        echo "DASHBOARD_URL=$DASHBOARD_URL" >> $GITHUB_ENV
+      id: set_outcome
+      run: echo "OUTCOME=${{ steps.quality_gate.outputs.outcome }}" >> $GITHUB_ENV
 
     - name: Fail if Quality Gate failed
       run: |
         if [ "$OUTCOME" != "success" ]; then
-          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 [$DASHBOARD_URL]($DASHBOARD_URL)" >> "$GITHUB_STEP_SUMMARY"
+          echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 $DASHBOARD_URL" >> "$GITHUB_STEP_SUMMARY"
           echo "🚨 Quality Gate FAILED! Please check SonarQube: $DASHBOARD_URL"
           exit 1
         else
