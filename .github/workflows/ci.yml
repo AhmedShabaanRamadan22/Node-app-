@@ -39,12 +39,15 @@ jobs:
       id: set_outcome
       run: echo "OUTCOME=${{ steps.quality_gate.outcome }}" >> $GITHUB_ENV
 
-    - name: Fail if Quality Gate failed
-      env:
-        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    - name: Debug SonarQube URL values
       run: |
-        PROJECT_URL="$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY"
+        echo "🔍 Debugging SonarQube URL values..."
+        echo "SONAR_HOST_URL=${{ secrets.SONAR_HOST_URL }}"
+        echo "SONAR_PROJECT_KEY=${{ secrets.SONAR_PROJECT_KEY }}"
+
+    - name: Fail if Quality Gate failed
+      run: |
+        PROJECT_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
         if [ "$OUTCOME" != "success" ]; then
           echo "🚨 Quality Gate **FAILED**! Please check SonarQube 👉 [$PROJECT_URL]($PROJECT_URL)" >> "$GITHUB_STEP_SUMMARY"
           echo "🚨 Quality Gate FAILED! Please check SonarQube: $PROJECT_URL"
