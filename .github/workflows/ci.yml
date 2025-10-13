@@ -35,11 +35,12 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       continue-on-error: true
 
+    - name: Set Dashboard URL
+      run: echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
+
     - name: Print SonarQube Result
       if: always()
       run: |
-        echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
-
         if [ "${{ steps.quality_gate.outcome }}" == "failure" ]; then
           echo "🚨 Quality Gate FAILED! Please check SonarQube" >> $GITHUB_STEP_SUMMARY
           echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
