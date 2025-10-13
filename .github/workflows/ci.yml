@@ -28,24 +28,16 @@ jobs:
         SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
 
     - name: Check SonarQube Quality Gate
-      id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-      continue-on-error: true
 
-    - name: Fail if Quality Gate failed
+    - name: Print SonarQube Dashboard link
+      if: always() # هتشتغل سواء اللي فوق نجح أو وقع
       run: |
         DASHBOARD_URL="${{ secrets.SONAR_HOST_URL }}/dashboard?id=${{ secrets.SONAR_PROJECT_KEY }}"
-        if [ "${{ steps.quality_gate.outcome }}" != "success" ]; then
-          echo "## 🚨 Quality Gate **FAILED**" >> "$GITHUB_STEP_SUMMARY"
-          echo "🔗 [Check SonarQube Dashboard]($DASHBOARD_URL)" >> "$GITHUB_STEP_SUMMARY"
-          exit 1
-        else
-          echo "## ✅ Quality Gate **PASSED** 🎉" >> "$GITHUB_STEP_SUMMARY"
-          echo "🔗 [View SonarQube Report]($DASHBOARD_URL)" >> "$GITHUB_STEP_SUMMARY"
-        fi
+        echo "🔗 SonarQube Dashboard: $DASHBOARD_URL" >> $GITHUB_STEP_SUMMARY
 
   build:
     name: Build Docker Image
