@@ -24,26 +24,23 @@ jobs:
         projectBaseDir: ./
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
 
     - name: Check SonarQube Quality Gate
       id: quality_gate
       uses: SonarSource/sonarqube-quality-gate-action@v1
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
       continue-on-error: true
 
     # -------------------------
-    # إنشاء URL Dashboard آمن (بدون أي secret)
+    # إنشاء URL Dashboard من الـ variables
     - name: Set Dashboard URL
-      env:
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        SONAR_PROJECT_KEY: ${{ secrets.SONAR_PROJECT_KEY }}
-      run: echo "DASHBOARD_URL=$SONAR_HOST_URL/dashboard?id=$SONAR_PROJECT_KEY" >> $GITHUB_ENV
+      run: echo "DASHBOARD_URL=${{ vars.SONAR_HOST_URL }}/dashboard?id=${{ vars.SONAR_PROJECT_KEY }}" >> $GITHUB_ENV
 
     # -------------------------
-    # طباعة النتيجة واللينك في الـ logs و Summary
+    # طباعة النتيجة واللينك
     - name: Print SonarQube Result
       if: always()
       run: |
@@ -53,7 +50,6 @@ jobs:
           echo "✅ Quality Gate PASSED!" | tee -a $GITHUB_STEP_SUMMARY
         fi
 
-        # رابط clickable باستخدام Markdown
         echo "🔗 [SonarQube Dashboard]($DASHBOARD_URL)" | tee -a $GITHUB_STEP_SUMMARY
 
     # -------------------------
@@ -90,7 +86,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build Docker image
+    - name: Build & Push Docker image
       uses: docker/build-push-action@v5
       with:
         context: .
