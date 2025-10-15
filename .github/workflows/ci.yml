@@ -35,12 +35,12 @@ jobs:
       continue-on-error: true
 
     # -------------------------
-    # إنشاء URL Dashboard من الـ variables
+    # define dashboard URL
     - name: Set Dashboard URL
       run: echo "DASHBOARD_URL=${{ vars.SONAR_HOST_URL }}/dashboard?id=${{ vars.SONAR_PROJECT_KEY }}" >> $GITHUB_ENV
 
     # -------------------------
-    # طباعة النتيجة واللينك
+    # Print results to summary
     - name: Print SonarQube Result
       if: always()
       run: |
@@ -53,7 +53,7 @@ jobs:
         echo "🔗 [SonarQube Dashboard]($DASHBOARD_URL)" | tee -a $GITHUB_STEP_SUMMARY
 
     # -------------------------
-    # إيقاف البايبلاين لو فشل الـ Quality Gate
+    # Fail the job if Quality Gate failed
     - name: Fail if Quality Gate failed
       if: steps.quality_gate.outcome == 'failure'
       run: |
@@ -91,4 +91,4 @@ jobs:
       with:
         context: .
         push: true
-        tags: ${{ secrets.DOCKER_USERNAME }}/node-app:v1.1.0
+        tags: ${{ secrets.DOCKER_USERNAME }}/my-app:latest
